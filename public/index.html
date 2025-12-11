@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatApp - Real-time Messaging</title>
+  <script>
+    // Redirect to appropriate page
+    const token = localStorage.getItem('token');
+    if (token) {
+      window.location.href = '/chat.html';
+    } else {
+      window.location.href = '/login.html';
+    }
+  </script>
+</head>
+<body>
+  <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+    <p>Redirecting...</p>
+  </div>
+</body>
+</html>

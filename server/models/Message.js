@@ -6,7 +6,7 @@ const messageSchema = new mongoose.Schema(
       type: String,
       required: [true, "Message content is required"],
       trim: true,
-      maxlength: [2000, "Message cpontent cannot exceed 2000 characters"],
+      maxlength: [2000, "Message content cannot exceed 2000 characters"],
     },
 
     sender: {
@@ -40,5 +40,7 @@ const messageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-messageSchema.index({room: 1, createdAt: -1});
+messageSchema.index({ room: 1, createdAt: -1 });
+messageSchema.index({ sender: 1 });
+
 module.exports = mongoose.model('Message', messageSchema);

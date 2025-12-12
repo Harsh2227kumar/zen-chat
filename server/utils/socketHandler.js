@@ -5,9 +5,40 @@ const User = require('../models/User');
 const activeUsers = new Map();
 const typingUsers = new Map();
 
-
 module.exports = (io) => {
-    io.on('connection', (socket) => {
+  // Helper functions defined in closure scope so they can access io
+  async function joinUserRooms(socket, userId) {
+    try {
+      const rooms = await Room.find({ participants: userId });
+      rooms.forEach(room => {
+        socket.join(room._id.toString());
+      });
+    } catch (error) {
+      console.error('Error joining user rooms:', error);
+    }
+  }
+
+  async function updateUserStatus(userId, status) {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        status,
+        lastSeen: Date.now()
+      });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
+  }
+
+  function clearTyping(roomId, userId) {
+    const key = `${roomId}-${userId}`;
+    if (typingUsers.has(key)) {
+      typingUsers.delete(key);
+      io.to(roomId).emit('typing:stop', { roomId, userId });
+    }
+  }
+
+  // Connection handler
+  io.on('connection', (socket) => {
     const userId = socket.user._id.toString();
         console.log(`User connected: ${socket.user.username} (${userId})`);
         
@@ -32,7 +63,6 @@ module.exports = (io) => {
         });
 
         socket.on('room:join', async (roomId) => {
-
             try {
                 const room = await Room.findOne({
                     _id: roomId,
@@ -40,31 +70,64 @@ module.exports = (io) => {
                 });
                 
                 if (room){
-                    socket.join(roomId);
+                    socket.join(roomId.toString());
                     console.log(`User ${socket.user.username} joined room ${roomId}`);
-
+                } else {
+                    console.log(`User ${socket.user.username} attempted to join room ${roomId} but is not a participant`);
                 }
-
             }
             catch (error) {
                 console.error(`Error joining room ${roomId}:`, error);
             }
         });
 
+        // Handle room creation - automatically join if user is a participant
+        socket.on('room:created', async (data) => {
+            try {
+                const roomId = data.roomId || data.room?._id;
+                if (!roomId) return;
+
+                const room = await Room.findById(roomId);
+                if (!room) return;
+
+                // Check if this user is a participant
+                const isParticipant = room.participants.some(
+                    (p) => p.toString() === userId
+                );
+
+                if (isParticipant) {
+                    socket.join(roomId.toString());
+                    console.log(`User ${socket.user.username} auto-joined new room ${roomId}`);
+                }
+            } catch (error) {
+                console.error(`Error handling room:created event:`, error);
+            }
+        });
+
     socket.on(`message:send`, async (data) => {
         try {
-            const {roomId, content}=data;
+            const { roomId, content } = data;
+
+            // Validation
+            if (!content || content.trim().length === 0) {
+                return socket.emit('message:error', { message: 'Message content cannot be empty' });
+            }
+
+            if (content.length > 2000) {
+                return socket.emit('message:error', { message: 'Message cannot exceed 2000 characters' });
+            }
+
             const room = await Room.findOne({
                 _id: roomId,
                 participants: userId
             });
 
-            if(!room){
-                return socket.emit('message:error', {message: 'You are not a participant of this room.'});
+            if (!room) {
+                return socket.emit('message:error', { message: 'You are not a participant of this room.' });
             }
 
             const message = await Message.create({
-                content, 
+                content: content.trim(), 
                 sender: userId,
                 room: roomId,
                 type: 'text'
@@ -75,7 +138,7 @@ module.exports = (io) => {
             room.lastMessage = message._id;
             await room.save();
 
-            io.to(roomId).emit('message:new', {message});
+            io.to(roomId.toString()).emit('message:new', {message});
 
             clearTyping(roomId, userId);
         }
@@ -157,36 +220,4 @@ module.exports = (io) => {
       });
     });
   });
-
-  // Helper functions
-  // Helper functions
-  async function joinUserRooms(socket, userId) {
-    try {
-      const rooms = await Room.find({ participants: userId });
-      rooms.forEach(room => {
-        socket.join(room._id.toString());
-      });
-    } catch (error) {
-      console.error('Error joining user rooms:', error);
-    }
-  }
-
-  async function updateUserStatus(userId, status) {
-    try {
-      await User.findByIdAndUpdate(userId, {
-        status,
-        lastSeen: Date.now()
-      });
-    } catch (error) {
-      console.error('Error updating user status:', error);
-    }
-  }
-
-  function clearTyping(roomId, userId) {
-    const key = `${roomId}-${userId}`;
-    if (typingUsers.has(key)) {
-      typingUsers.delete(key);
-      io.to(roomId).emit('typing:stop', { roomId, userId });
-    }
-  }
 };

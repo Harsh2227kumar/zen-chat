@@ -42,6 +42,7 @@ const roomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-roomSchema.index({type: 1, participants: 1});
+roomSchema.index({ type: 1, participants: 1 });
+roomSchema.index({ participants: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('Room', roomSchema);

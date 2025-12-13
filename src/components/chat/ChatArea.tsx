@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, ChevronDown, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MessageInfoModal } from "./MessageInfoModal";
+import { Socket } from "socket.io-client";
 
 interface Message {
   id: string;
@@ -9,6 +17,8 @@ interface Message {
   timestamp: string;
   senderId: string;
   senderName?: string;
+  readBy?: Array<{ user: string | { _id: string; username: string; avatar?: string }; readAt: string }>;
+  createdAt?: string;
 }
 
 interface ChatAreaProps {
@@ -17,11 +27,14 @@ interface ChatAreaProps {
     name: string;
     avatar: string;
     isOnline: boolean;
+    isGroup?: boolean;
+    participants?: Array<{ _id: string; username: string; avatar?: string }>;
   } | null;
   messages: Message[];
   currentUserId: string;
   onSendMessage: (content: string) => void;
   isTyping?: boolean;
+  socket: Socket | null;
 }
 
 export function ChatArea({
@@ -30,8 +43,11 @@ export function ChatArea({
   currentUserId,
   onSendMessage,
   isTyping = false,
+  socket,
 }: ChatAreaProps) {
   const [messageContent, setMessageContent] = useState("");
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [isMessageInfoOpen, setIsMessageInfoOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,34 +97,78 @@ export function ChatArea({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
           const isSent = message.senderId === currentUserId;
+          
           return (
             <div
               key={message.id}
-              className={`flex ${isSent ? "justify-end" : "justify-start"}`}
+              className={`flex ${isSent ? "justify-end" : "justify-start"} items-end`}
             >
-              <div
-                className={`max-w-[70%] px-4 py-3 rounded-2xl ${
-                  isSent
-                    ? "bg-message-sent text-primary-foreground"
-                    : "bg-message-received text-foreground"
-                }`}
-              >
-                {!isSent && message.senderName && (
-                  <p className="text-xs font-semibold mb-1 text-primary">{message.senderName}</p>
-                )}
-                <p className="break-words">{message.content}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    isSent ? "text-primary-foreground/70" : "text-muted-foreground"
+              <div className={`flex items-end space-x-2 ${isSent ? "flex-row-reverse space-x-reverse" : ""}`}>
+                <div
+                  className={`max-w-[70%] px-4 py-3 rounded-2xl relative group ${
+                    isSent
+                      ? "bg-message-sent text-primary-foreground"
+                      : "bg-message-received text-foreground"
                   }`}
                 >
-                  {message.timestamp}
-                </p>
+                  {!isSent && message.senderName && (
+                    <p className="text-xs font-semibold mb-1 text-primary">{message.senderName}</p>
+                  )}
+                  <p className="break-words">{message.content}</p>
+                  <div className="flex items-center justify-end space-x-1 mt-1">
+                    <p
+                      className={`text-xs ${
+                        isSent ? "text-primary-foreground/70" : "text-muted-foreground"
+                      }`}
+                    >
+                      {message.timestamp}
+                    </p>
+                    {isSent && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-black/10 ${
+                              isSent ? "text-primary-foreground/70" : "text-muted-foreground"
+                            }`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedMessage(message);
+                              setIsMessageInfoOpen(true);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <Info className="h-4 w-4 mr-2" />
+                            Message Info
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Message Info Modal */}
+      <MessageInfoModal
+        isOpen={isMessageInfoOpen}
+        onClose={() => {
+          setIsMessageInfoOpen(false);
+          setSelectedMessage(null);
+        }}
+        message={selectedMessage}
+        roomType={selectedContact?.isGroup ? "group" : "private"}
+        roomParticipants={selectedContact?.participants || []}
+        currentUserId={currentUserId}
+      />
 
       {/* Typing Indicator */}
       {isTyping && (

@@ -134,6 +134,7 @@ module.exports = (io) => {
             });
 
             await message.populate('sender', 'username avatar');
+            await message.populate('readBy.user', 'username avatar');
 
             room.lastMessage = message._id;
             await room.save();

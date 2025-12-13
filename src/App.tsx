@@ -2,15 +2,21 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+=======
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+<<<<<<< HEAD
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isValidating, setIsValidating] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -111,5 +117,22 @@ const App = () => {
     </QueryClientProvider>
   );
 };
+=======
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 
 export default App;

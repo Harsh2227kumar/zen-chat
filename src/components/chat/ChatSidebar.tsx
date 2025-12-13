@@ -1,7 +1,10 @@
 import { Moon, Users, MessageCirclePlus, LogOut, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
+=======
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 
 interface Contact {
   id: string;
@@ -20,7 +23,10 @@ interface ChatSidebarProps {
   onNewGroup: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+<<<<<<< HEAD
   currentUser?: { username: string };
+=======
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 }
 
 export function ChatSidebar({
@@ -31,6 +37,7 @@ export function ChatSidebar({
   onNewGroup,
   searchQuery,
   onSearchChange,
+<<<<<<< HEAD
   currentUser,
 }: ChatSidebarProps) {
   const navigate = useNavigate();
@@ -51,6 +58,9 @@ export function ChatSidebar({
     }
   };
 
+=======
+}: ChatSidebarProps) {
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -60,7 +70,11 @@ export function ChatSidebar({
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
+<<<<<<< HEAD
           <h1 className="text-3xl font-bold text-sidebar-foreground">Request App</h1>
+=======
+          <h1 className="text-3xl font-bold text-sidebar-foreground">RequestApp</h1>
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
           <div className="flex space-x-2">
             <Button variant="ghost" size="icon" className="p-2 rounded-full hover:bg-sidebar-accent">
               <Moon className="h-5 w-5 text-sidebar-foreground" />
@@ -140,6 +154,7 @@ export function ChatSidebar({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full border-2 border-primary bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">
+<<<<<<< HEAD
               {currentUser?.username?.[0]?.toUpperCase() || "U"}
             </div>
             <div>
@@ -154,6 +169,16 @@ export function ChatSidebar({
             onClick={handleLogout}
             title="Logout"
           >
+=======
+              JD
+            </div>
+            <div>
+              <p className="font-semibold text-sidebar-foreground">John Doe</p>
+              <p className="text-sm text-muted-foreground">My Profile</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" className="p-2 rounded-full hover:bg-sidebar-accent">
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
             <LogOut className="h-5 w-5 text-sidebar-foreground" />
           </Button>
         </div>

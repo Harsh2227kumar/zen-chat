@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect, useRef } from "react";
 import { X, MessageCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,13 @@ interface User {
   status: string;
 }
 
+=======
+import { useState } from "react";
+import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 interface NewChatModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +26,7 @@ interface NewChatModalProps {
 }
 
 export function NewChatModal({ isOpen, onClose, onCreateChat }: NewChatModalProps) {
+<<<<<<< HEAD
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -112,24 +121,46 @@ export function NewChatModal({ isOpen, onClose, onCreateChat }: NewChatModalProp
     setSearchQuery("");
     setSearchResults([]);
     onClose();
+=======
+  const [username, setUsername] = useState("");
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username.trim()) {
+      onCreateChat(username.trim());
+      setUsername("");
+      onClose();
+    }
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       <div className="absolute inset-0 bg-foreground/50" onClick={onClose} />
+<<<<<<< HEAD
       <div ref={modalRef} className="relative bg-card rounded-xl p-6 w-full max-w-md shadow-xl">
+=======
+      <div className="relative bg-card rounded-xl p-6 w-full max-w-md shadow-xl">
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-card-foreground">New Chat</h2>
           <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
             <X className="h-5 w-5" />
           </Button>
         </div>
+<<<<<<< HEAD
 
         <div className="space-y-4">
+=======
+        <form onSubmit={handleSubmit} className="space-y-4">
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
           <div>
             <label className="text-sm font-medium text-card-foreground block mb-2">
               Username or Email
             </label>
+<<<<<<< HEAD
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -213,6 +244,16 @@ export function NewChatModal({ isOpen, onClose, onCreateChat }: NewChatModalProp
           )}
 
           <div className="flex space-x-3 pt-2">
+=======
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username or email"
+              className="w-full px-4 py-2 rounded-xl"
+            />
+          </div>
+          <div className="flex space-x-3">
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
             <Button
               type="button"
               variant="secondary"
@@ -221,8 +262,16 @@ export function NewChatModal({ isOpen, onClose, onCreateChat }: NewChatModalProp
             >
               Cancel
             </Button>
+<<<<<<< HEAD
           </div>
         </div>
+=======
+            <Button type="submit" className="flex-1 rounded-xl">
+              Start Chat
+            </Button>
+          </div>
+        </form>
+>>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
       </div>
     </div>
   );

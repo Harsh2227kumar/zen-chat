@@ -1,15 +1,9 @@
-<<<<<<< HEAD
 import { useState, useEffect, useRef } from "react";
 import { X, Search, UserPlus, X as XIcon } from "lucide-react";
-=======
-import { useState } from "react";
-import { X } from "lucide-react";
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-<<<<<<< HEAD
 interface User {
   _id: string;
   username: string;
@@ -22,18 +16,11 @@ interface NewGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateGroup: (name: string, description: string, participantIds: string[]) => void;
-=======
-interface NewGroupModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreateGroup: (name: string, description: string) => void;
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 }
 
 export function NewGroupModal({ isOpen, onClose, onCreateGroup }: NewGroupModalProps) {
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
-<<<<<<< HEAD
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -147,17 +134,6 @@ export function NewGroupModal({ isOpen, onClose, onCreateGroup }: NewGroupModalP
       setDescription("");
       setSelectedUsers([]);
       setSearchQuery("");
-=======
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (groupName.trim()) {
-      onCreateGroup(groupName.trim(), description.trim());
-      setGroupName("");
-      setDescription("");
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
       onClose();
     }
   };
@@ -165,46 +141,30 @@ export function NewGroupModal({ isOpen, onClose, onCreateGroup }: NewGroupModalP
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       <div className="absolute inset-0 bg-foreground/50" onClick={onClose} />
-<<<<<<< HEAD
       <div ref={modalRef} className="relative bg-card rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-=======
-      <div className="relative bg-card rounded-xl p-6 w-full max-w-md shadow-xl">
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-card-foreground">Create Group</h2>
           <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
             <X className="h-5 w-5" />
           </Button>
         </div>
-<<<<<<< HEAD
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Group Name */}
           <div>
             <label className="text-sm font-medium text-card-foreground block mb-2">
               Group Name <span className="text-destructive">*</span>
-=======
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-card-foreground block mb-2">
-              Group Name
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
             </label>
             <Input
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
               placeholder="Enter group name"
               className="w-full px-4 py-2 rounded-xl"
-<<<<<<< HEAD
               required
             />
           </div>
 
           {/* Description */}
-=======
-            />
-          </div>
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
           <div>
             <label className="text-sm font-medium text-card-foreground block mb-2">
               Description (optional)
@@ -217,7 +177,6 @@ export function NewGroupModal({ isOpen, onClose, onCreateGroup }: NewGroupModalP
               rows={3}
             />
           </div>
-<<<<<<< HEAD
 
           {/* Add Members Section */}
           <div>
@@ -332,9 +291,6 @@ export function NewGroupModal({ isOpen, onClose, onCreateGroup }: NewGroupModalP
 
           {/* Action Buttons */}
           <div className="flex space-x-3 pt-2">
-=======
-          <div className="flex space-x-3">
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
             <Button
               type="button"
               variant="secondary"
@@ -343,17 +299,12 @@ export function NewGroupModal({ isOpen, onClose, onCreateGroup }: NewGroupModalP
             >
               Cancel
             </Button>
-<<<<<<< HEAD
             <Button
               type="submit"
               className="flex-1 rounded-xl"
               disabled={!groupName.trim()}
             >
               Create Group {selectedUsers.length > 0 && `(${selectedUsers.length + 1})`}
-=======
-            <Button type="submit" className="flex-1 rounded-xl">
-              Create Group
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
             </Button>
           </div>
         </form>

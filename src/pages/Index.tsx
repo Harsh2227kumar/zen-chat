@@ -1,14 +1,14 @@
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
-=======
-import { useState } from "react";
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatArea } from "@/components/chat/ChatArea";
 import { NewChatModal } from "@/components/chat/NewChatModal";
 import { NewGroupModal } from "@/components/chat/NewGroupModal";
-<<<<<<< HEAD
 import { io, Socket } from "socket.io-client";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Sheet,
+  SheetContent,
+} from "@/components/ui/sheet";
 
 interface Contact {
   id: string;
@@ -30,47 +30,21 @@ interface Message {
   readBy?: Array<{ user: string; readAt: string }>;
   createdAt?: string;
 }
-=======
-
-// Mock data
-const mockContacts = [
-  { id: "1", name: "Alice Johnson", avatar: "", lastMessage: "Hey, how are you?", isOnline: true, unreadCount: 2 },
-  { id: "2", name: "Bob Smith", avatar: "", lastMessage: "See you tomorrow!", isOnline: false, unreadCount: 0 },
-  { id: "3", name: "Team Project", avatar: "", lastMessage: "Great work everyone!", isOnline: true, unreadCount: 5 },
-  { id: "4", name: "Carol White", avatar: "", lastMessage: "Thanks for your help", isOnline: true, unreadCount: 0 },
-  { id: "5", name: "David Brown", avatar: "", lastMessage: "Let me check that", isOnline: false, unreadCount: 1 },
-];
-
-const mockMessages: Record<string, Array<{ id: string; content: string; timestamp: string; senderId: string; senderName?: string }>> = {
-  "1": [
-    { id: "m1", content: "Hey, how are you?", timestamp: "10:30 AM", senderId: "1", senderName: "Alice Johnson" },
-    { id: "m2", content: "I'm doing great, thanks! How about you?", timestamp: "10:32 AM", senderId: "current" },
-    { id: "m3", content: "Pretty good! Working on the new project.", timestamp: "10:33 AM", senderId: "1", senderName: "Alice Johnson" },
-  ],
-  "2": [
-    { id: "m4", content: "Are we still meeting tomorrow?", timestamp: "Yesterday", senderId: "current" },
-    { id: "m5", content: "See you tomorrow!", timestamp: "Yesterday", senderId: "2", senderName: "Bob Smith" },
-  ],
-  "3": [
-    { id: "m6", content: "The presentation looks amazing!", timestamp: "2:00 PM", senderId: "1", senderName: "Alice Johnson" },
-    { id: "m7", content: "I agree, well done team!", timestamp: "2:05 PM", senderId: "current" },
-    { id: "m8", content: "Great work everyone!", timestamp: "2:10 PM", senderId: "4", senderName: "Carol White" },
-  ],
-};
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
 
 export default function Index() {
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState(false);
-<<<<<<< HEAD
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [socket, setSocket] = useState<Socket | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [connectError, setConnectError] = useState<string | null>(null);
+
+  const isMobile = useIsMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Initialize socket connection and fetch initial data
   useEffect(() => {
@@ -100,7 +74,7 @@ export default function Index() {
     newSocket.on("connect", async () => {
       console.log("Connected to server");
       setConnectError(null);
-      
+
       try {
         // Get current user info
         const userResponse = await fetch("/api/auth/me", { credentials: "include" });
@@ -119,16 +93,16 @@ export default function Index() {
 
         if (roomsResponse.ok) {
           const { rooms = [] } = await roomsResponse.json();
-          
+
           // Emit room:join for each room to ensure user is in all socket rooms
           rooms.forEach((room: any) => {
             newSocket.emit('room:join', room._id);
           });
-          
+
           const formattedRooms = rooms.map((room: any) => {
             const isGroup = room.type === "group";
             const participants = room.participants || [];
-            
+
             // Convert IDs to strings for comparison
             const currentUserIdStr = currentUserId?.toString();
             const otherParticipants = participants.filter((p: any) => {
@@ -211,10 +185,32 @@ export default function Index() {
 
       setMessages((prev) => {
         const roomMessages = prev[messageData.room] || [];
-        // Check if message already exists (prevent duplicates from optimistic updates)
-        const exists = roomMessages.some((msg) => msg.id === formattedMessage.id);
-        if (exists) return prev;
 
+        // 1. Try to find and replace the optimistic message by matching content and sender
+        // Note: The optimistic message has a tempId that starts with 'temp-'
+        const optimisticIndex = roomMessages.findIndex(
+          (msg) =>
+            msg.id.startsWith("temp-") &&
+            msg.content === formattedMessage.content &&
+            msg.senderId === formattedMessage.senderId
+        );
+
+        if (optimisticIndex !== -1) {
+          // Found optimistic message, replace it with the final server message
+          const newRoomMessages = [...roomMessages];
+          newRoomMessages[optimisticIndex] = formattedMessage;
+
+          return {
+            ...prev,
+            [messageData.room]: newRoomMessages,
+          };
+        }
+
+        // 2. Fallback: Check if the final message ID already exists (to prevent duplicates if replacement failed or if it's an old message)
+        const finalIdExists = roomMessages.some((msg) => msg.id === formattedMessage.id);
+        if (finalIdExists) return prev;
+
+        // 3. Otherwise, append the message (this handles messages sent by others or messages that missed the replacement check)
         return {
           ...prev,
           [messageData.room]: [...roomMessages, formattedMessage],
@@ -255,7 +251,7 @@ export default function Index() {
 
       // Get current user ID - try from state first, then fetch if needed
       let currentUserIdStr = currentUser?.id?.toString();
-      
+
       // If currentUser not set yet, fetch it
       if (!currentUserIdStr) {
         try {
@@ -273,22 +269,22 @@ export default function Index() {
       }
 
       if (!currentUserIdStr) return;
-      
-      const isParticipant = roomData.participantIds?.includes(currentUserIdStr) || 
-                           roomData.room?.participants?.some((p: any) => {
-                             const pId = p._id?.toString ? p._id.toString() : p._id;
-                             return pId === currentUserIdStr;
-                           });
-      
+
+      const isParticipant = roomData.participantIds?.includes(currentUserIdStr) ||
+        roomData.room?.participants?.some((p: any) => {
+          const pId = p._id?.toString ? p._id.toString() : p._id;
+          return pId === currentUserIdStr;
+        });
+
       if (!isParticipant) return;
 
       try {
         // Check if room already exists in contacts to prevent duplicates
         const roomExists = contacts.some(c => c.id === roomId);
-        
+
         // Join the new room via socket (backend will also auto-join via room:created handler)
         newSocket.emit('room:join', roomId);
-        
+
         // Also emit room:created to backend for auto-join
         newSocket.emit('room:created', roomData);
 
@@ -300,57 +296,61 @@ export default function Index() {
             const { rooms = [] } = await roomsResponse.json();
             const currentUserIdStrForFormat = currentUser?.id?.toString() || currentUserIdStr;
 
-          const formattedRooms = rooms.map((room: any) => {
-            const isGroup = room.type === "group";
-            const participants = room.participants || [];
-            
-            const otherParticipants = participants.filter((p: any) => {
-              const pId = p._id?.toString ? p._id.toString() : p._id;
-              return pId !== currentUserIdStrForFormat;
-            });
+            const formattedRooms = rooms.map((room: any) => {
+              const isGroup = room.type === "group";
+              const participants = room.participants || [];
 
-            let roomName: string;
-            if (isGroup) {
-              roomName = room.name || "Unnamed Group";
-            } else {
-              // For private chats, show only the OTHER participant's name (not all participants)
-              if (otherParticipants.length === 1) {
-                roomName = otherParticipants[0].username || otherParticipants[0].email || "Unknown";
-              } else if (otherParticipants.length > 1) {
-                roomName = otherParticipants.map((p: any) => p.username || p.email || "Unknown").join(", ");
+              const otherParticipants = participants.filter((p: any) => {
+                const pId = p._id?.toString ? p._id.toString() : p._id;
+                return pId !== currentUserIdStrForFormat;
+              });
+
+              let roomName: string;
+              if (isGroup) {
+                roomName = room.name || "Unnamed Group";
               } else {
-                roomName = "Private Chat";
+                // For private chats, show only the OTHER participant's name (not all participants)
+                if (otherParticipants.length === 1) {
+                  roomName = otherParticipants[0].username || otherParticipants[0].email || "Unknown";
+                } else if (otherParticipants.length > 1) {
+                  roomName = otherParticipants.map((p: any) => p.username || p.email || "Unknown").join(", ");
+                } else {
+                  roomName = "Private Chat";
+                }
               }
-            }
 
-            let roomAvatar = "";
-            if (isGroup) {
-              roomAvatar = room.avatar || "";
-            } else {
-              if (otherParticipants.length > 0) {
-                roomAvatar = otherParticipants[0].avatar || "";
+              let roomAvatar = "";
+              if (isGroup) {
+                roomAvatar = room.avatar || "";
+              } else {
+                if (otherParticipants.length > 0) {
+                  roomAvatar = otherParticipants[0].avatar || "";
+                }
               }
-            }
 
-            const lastMessageText = room.lastMessage?.content || "";
+              const lastMessageText = room.lastMessage?.content || "";
 
-            return {
-              id: room._id,
-              name: roomName,
-              avatar: roomAvatar,
-              lastMessage: lastMessageText,
-              isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
-              unreadCount: room.unreadCount || 0,
-              isGroup,
-              participants: room.participants || [],
-            };
-          });
-          setContacts(formattedRooms);
+              return {
+                id: room._id,
+                name: roomName,
+                avatar: roomAvatar,
+                lastMessage: lastMessageText,
+                isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
+                unreadCount: room.unreadCount || 0,
+                isGroup,
+                participants: room.participants || [],
+              };
+            });
+            setContacts(formattedRooms);
+          }
         }
-        } else {
-          // Room already exists, just select it
-          setSelectedContactId(roomId);
+
+        // Select the new room, and close sidebar on mobile
+        setSelectedContactId(roomId);
+        if (isMobile) {
+          setIsSidebarOpen(false);
         }
+
       } catch (error) {
         console.error("Error handling room creation:", error);
       }
@@ -361,12 +361,12 @@ export default function Index() {
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, []); // isMobile is not a dependency here as it's a fixed value after mount.
 
   // Load messages when room is selected
   useEffect(() => {
     if (!selectedContactId) return;
-    
+
     // If messages are already loaded for this room, don't fetch again
     if (messages[selectedContactId]) return;
 
@@ -398,17 +398,12 @@ export default function Index() {
     };
 
     fetchMessages();
-  }, [selectedContactId]); // Removed messages from dependencies to prevent infinite loop
-=======
-  const [contacts, setContacts] = useState(mockContacts);
-  const [messages, setMessages] = useState(mockMessages);
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
+  }, [selectedContactId]);
 
   const selectedContact = contacts.find((c) => c.id === selectedContactId) || null;
   const currentMessages = selectedContactId ? messages[selectedContactId] || [] : [];
 
   const handleSendMessage = (content: string) => {
-<<<<<<< HEAD
     if (!selectedContactId || !socket || !currentUser) return;
 
     const trimmedContent = content.trim();
@@ -422,20 +417,10 @@ export default function Index() {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       senderId: currentUser.id,
       senderName: currentUser.username,
-=======
-    if (!selectedContactId) return;
-    
-    const newMessage = {
-      id: `m${Date.now()}`,
-      content,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      senderId: "current",
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
     };
 
     setMessages((prev) => ({
       ...prev,
-<<<<<<< HEAD
       [selectedContactId]: [...(prev[selectedContactId] || []), optimisticMessage],
     }));
 
@@ -454,6 +439,13 @@ export default function Index() {
     });
   };
 
+  const handleSelectContact = (id: string) => {
+    setSelectedContactId(id);
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   const handleCreateChat = async (username: string) => {
     try {
       const response = await fetch("/api/chat/rooms/private-by-username", {
@@ -468,7 +460,7 @@ export default function Index() {
         const room = data.room;
         const participants = room.participants || [];
         const currentUserIdStr = currentUser?.id?.toString();
-        
+
         // Extract other participant's name for private chat
         const otherParticipants = participants.filter((p: any) => {
           const pId = p._id?.toString ? p._id.toString() : p._id;
@@ -479,35 +471,39 @@ export default function Index() {
         const roomName = otherParticipants.length === 1
           ? (otherParticipants[0].username || otherParticipants[0].email || "Unknown")
           : otherParticipants.length > 1
-          ? otherParticipants.map((p: any) => p.username || p.email || "Unknown").join(", ")
-          : username; // Fallback to searched username
+            ? otherParticipants.map((p: any) => p.username || p.email || "Unknown").join(", ")
+            : username; // Fallback to searched username
 
         // For private chats, always use the other participant's avatar
-        const roomAvatar = otherParticipants.length > 0 
-          ? (otherParticipants[0].avatar || "") 
+        const roomAvatar = otherParticipants.length > 0
+          ? (otherParticipants[0].avatar || "")
           : "";
 
         // Check if room already exists in contacts to prevent duplicates
         const roomExists = contacts.some(c => c.id === room._id);
-        
+
         if (!roomExists) {
-        const newRoom = {
-          id: room._id,
-          name: roomName,
-          avatar: roomAvatar,
-          lastMessage: "",
-          isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
-          unreadCount: 0,
-          isGroup: false,
-          participants: room.participants || [],
-        };
-        setContacts((prev) => [newRoom, ...prev]);
+          const newRoom = {
+            id: room._id,
+            name: roomName,
+            avatar: roomAvatar,
+            lastMessage: "",
+            isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
+            unreadCount: 0,
+            isGroup: false,
+            participants: room.participants || [],
+          };
+          setContacts((prev) => [newRoom, ...prev]);
         }
         setSelectedContactId(room._id);
-        
+
         // IMPORTANT: Join the new room via socket for real-time messaging
         if (socket) {
           socket.emit('room:join', room._id);
+        }
+
+        if (isMobile) {
+          setIsSidebarOpen(false);
         }
       }
     } catch (error) {
@@ -543,10 +539,14 @@ export default function Index() {
         };
         setContacts((prev) => [newGroup, ...prev]);
         setSelectedContactId(newGroup.id);
-        
+
         // IMPORTANT: Join the new room via socket for real-time messaging
         if (socket) {
           socket.emit('room:join', data.room._id);
+        }
+
+        if (isMobile) {
+          setIsSidebarOpen(false);
         }
       }
     } catch (error) {
@@ -566,64 +566,60 @@ export default function Index() {
     );
   }
 
-=======
-      [selectedContactId]: [...(prev[selectedContactId] || []), newMessage],
-    }));
-  };
+  const chatSidebar = (
+    <ChatSidebar
+      contacts={contacts}
+      selectedContactId={selectedContactId}
+      onSelectContact={handleSelectContact}
+      onNewChat={() => setIsNewChatModalOpen(true)}
+      onNewGroup={() => setIsNewGroupModalOpen(true)}
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      currentUser={currentUser || undefined}
+    />
+  );
 
-  const handleCreateChat = (username: string) => {
-    const newContact = {
-      id: `c${Date.now()}`,
-      name: username,
-      avatar: "",
-      lastMessage: "",
-      isOnline: true,
-      unreadCount: 0,
-    };
-    setContacts((prev) => [newContact, ...prev]);
-    setSelectedContactId(newContact.id);
-  };
+  const chatArea = (
+    <ChatArea
+      selectedContact={selectedContact}
+      messages={currentMessages}
+      currentUserId={currentUser?.id || ""}
+      onSendMessage={handleSendMessage}
+      socket={socket}
+      isMobile={isMobile}
+      onOpenSidebar={() => setIsSidebarOpen(true)}
+    />
+  );
 
-  const handleCreateGroup = (name: string, description: string) => {
-    const newGroup = {
-      id: `g${Date.now()}`,
-      name,
-      avatar: "",
-      lastMessage: description || "Group created",
-      isOnline: true,
-      unreadCount: 0,
-    };
-    setContacts((prev) => [newGroup, ...prev]);
-    setSelectedContactId(newGroup.id);
-  };
-
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
   return (
-    <div className="flex h-screen w-full">
-      <ChatSidebar
-        contacts={contacts}
-        selectedContactId={selectedContactId}
-        onSelectContact={setSelectedContactId}
-        onNewChat={() => setIsNewChatModalOpen(true)}
-        onNewGroup={() => setIsNewGroupModalOpen(true)}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-<<<<<<< HEAD
-        currentUser={currentUser || undefined}
-=======
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
-      />
-      <ChatArea
-        selectedContact={selectedContact}
-        messages={currentMessages}
-<<<<<<< HEAD
-        currentUserId={currentUser?.id || ""}
-=======
-        currentUserId="current"
->>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
-        onSendMessage={handleSendMessage}
-        socket={socket}
-      />
+    <div className="flex h-screen w-full overflow-hidden">
+      {isMobile ? (
+        <>
+          {/* Mobile Layout: Sidebar in a Sheet, ChatArea always present */}
+          <Sheet
+            open={!selectedContactId || isSidebarOpen}
+            onOpenChange={setIsSidebarOpen}
+          >
+            <SheetContent
+              side="left"
+              className="w-3/4 max-w-sm p-0 sm:w-80"
+            >
+              {chatSidebar}
+            </SheetContent>
+          </Sheet>
+
+          <div className="flex-1 min-w-0">
+            {chatArea}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Desktop/Tablet Layout: Side-by-side */}
+          {chatSidebar}
+          {chatArea}
+        </>
+      )}
+
       <NewChatModal
         isOpen={isNewChatModalOpen}
         onClose={() => setIsNewChatModalOpen(false)}

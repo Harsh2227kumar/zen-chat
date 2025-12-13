@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, ChevronDown, Info } from "lucide-react";
+import { Send, ChevronDown, Info, Menu } from "lucide-react"; // ADDED Menu for mobile sidebar toggle
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MessageInfoModal } from "./MessageInfoModal";
 import { Socket } from "socket.io-client";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Message {
   id: string;
@@ -35,6 +36,9 @@ interface ChatAreaProps {
   onSendMessage: (content: string) => void;
   isTyping?: boolean;
   socket: Socket | null;
+  // ADDED responsive props below:
+  isMobile?: boolean;
+  onOpenSidebar?: () => void;
 }
 
 export function ChatArea({
@@ -44,6 +48,9 @@ export function ChatArea({
   onSendMessage,
   isTyping = false,
   socket,
+  // ADDED responsive props below:
+  isMobile = false,
+  onOpenSidebar,
 }: ChatAreaProps) {
   const [messageContent, setMessageContent] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -57,7 +64,21 @@ export function ChatArea({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
+  };
+
   if (!selectedContact) {
+    // If on mobile and no contact is selected, the sidebar Sheet is visible (handled in Index.tsx).
+    // Return an empty div here to prevent the welcome screen from showing behind the sheet.
+    if (isMobile) {
+      return <div className="flex-1" />;
+    }
+
+    // Desktop/Tablet welcome screen
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-background">
         <span className="text-6xl mb-4">💬</span>
@@ -73,6 +94,17 @@ export function ChatArea({
     <div className="flex-1 flex flex-col bg-background">
       {/* Chat Header */}
       <div className="p-4 border-b border-border flex items-center space-x-3">
+        {isMobile && onOpenSidebar && ( // ADDED: Mobile menu button to open sidebar
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0"
+            onClick={onOpenSidebar}
+            aria-label="Open sidebar"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        )}
         <div className="relative">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-lg font-semibold text-muted-foreground overflow-hidden">
             {selectedContact.avatar ? (
@@ -97,59 +129,61 @@ export function ChatArea({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
           const isSent = message.senderId === currentUserId;
-          
+
           return (
             <div
               key={message.id}
-              className={`flex ${isSent ? "justify-end" : "justify-start"} items-end`}
+              className={`flex ${isSent ? "justify-end" : "justify-start"}`}
             >
-              <div className={`flex items-end space-x-2 ${isSent ? "flex-row-reverse space-x-reverse" : ""}`}>
-                <div
-                  className={`max-w-[70%] px-4 py-3 rounded-2xl relative group ${
-                    isSent
-                      ? "bg-message-sent text-primary-foreground"
-                      : "bg-message-received text-foreground"
+              <div
+                // Responsive Max Width: Caps at 500px on large screens, dynamic on small screens
+                className={`relative group px-4 pt-3 pb-6 rounded-xl shadow-sm max-w-[calc(100vw-120px)] sm:max-w-[400px] md:max-w-[500px] ${isSent
+                    ? "bg-message-sent text-primary-foreground rounded-br-none"
+                    : "bg-message-received text-foreground rounded-bl-none"
                   }`}
-                >
-                  {!isSent && message.senderName && (
-                    <p className="text-xs font-semibold mb-1 text-primary">{message.senderName}</p>
-                  )}
-                  <p className="break-words">{message.content}</p>
-                  <div className="flex items-center justify-end space-x-1 mt-1">
-                    <p
-                      className={`text-xs ${
-                        isSent ? "text-primary-foreground/70" : "text-muted-foreground"
+              >
+                {!isSent && message.senderName && (
+                  <p className="text-xs font-semibold mb-1 text-primary">{message.senderName}</p>
+                )}
+
+                {/* Message Content: 'whitespace-pre-wrap' ensures line breaks are respected */}
+                <p className="text-sm sm:text-base break-words whitespace-pre-wrap pr-12">
+                  {message.content}
+                </p>
+
+                {/* Timestamp/Dropdown: Absolutely positioned at bottom-right */}
+                <div className="absolute bottom-1 right-2 flex items-center space-x-1">
+                  <p
+                    className={`text-[10px] ${isSent ? "text-primary-foreground/70" : "text-muted-foreground"
                       }`}
-                    >
-                      {message.timestamp}
-                    </p>
-                    {isSent && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-black/10 ${
-                              isSent ? "text-primary-foreground/70" : "text-muted-foreground"
+                  >
+                    {message.timestamp}
+                  </p>
+                  {isSent && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10 ${isSent ? "text-primary-foreground/70" : "text-muted-foreground"
                             }`}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ChevronDown className="h-3 w-3" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedMessage(message);
-                              setIsMessageInfoOpen(true);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <Info className="h-4 w-4 mr-2" />
-                            Message Info
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronDown className="h-3 w-3" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedMessage(message);
+                            setIsMessageInfoOpen(true);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Info className="h-4 w-4 mr-2" />
+                          Message Info
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
             </div>
@@ -182,13 +216,15 @@ export function ChatArea({
       {/* Message Input */}
       <div className="p-4 border-t border-border">
         <form onSubmit={handleSubmit} className="flex space-x-3">
-          <Input
+          {/* Textarea for multiline support and key handling for submission */}
+          <Textarea
             value={messageContent}
             onChange={(e) => setMessageContent(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="flex-1 rounded-full px-5 py-3 bg-secondary border-0"
+            className="flex-1 rounded-xl resize-none min-h-[44px] max-h-[150px] p-3 border-0 bg-secondary"
           />
-          <Button type="submit" className="px-6 py-3 rounded-full">
+          <Button type="submit" className="px-6 py-3 rounded-xl">
             <Send className="h-5 w-5" />
           </Button>
         </form>

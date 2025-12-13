@@ -59,8 +59,9 @@ export default {
         },
         online: "hsl(var(--online))",
         message: {
-          sent: "hsl(var(--message-sent))",
-          received: "hsl(var(--message-received))",
+          // CORRECTED: Direct hex codes are now used, replacing hsl(var(--...))
+          sent: "#324A81",
+          received: "#F3F4F6",
         },
       },
       borderRadius: {

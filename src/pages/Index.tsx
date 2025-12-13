@@ -18,6 +18,7 @@ interface Contact {
   isOnline: boolean;
   unreadCount?: number;
   isGroup?: boolean;
+  participants?: Array<{ _id: string; username: string; avatar?: string }>;
 }
 
 interface Message {
@@ -26,6 +27,8 @@ interface Message {
   timestamp: string;
   senderId: string;
   senderName?: string;
+  readBy?: Array<{ user: string; readAt: string }>;
+  createdAt?: string;
 }
 =======
 
@@ -171,6 +174,7 @@ export default function Index() {
               isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
               unreadCount: room.unreadCount || 0,
               isGroup,
+              participants: room.participants || [],
             };
           });
           setContacts(formattedRooms);
@@ -201,6 +205,8 @@ export default function Index() {
         timestamp: new Date(messageData.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         senderId: messageData.sender._id,
         senderName: messageData.sender.username,
+        readBy: messageData.readBy || [],
+        createdAt: messageData.createdAt,
       };
 
       setMessages((prev) => {
@@ -336,6 +342,7 @@ export default function Index() {
               isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
               unreadCount: room.unreadCount || 0,
               isGroup,
+              participants: room.participants || [],
             };
           });
           setContacts(formattedRooms);
@@ -377,6 +384,8 @@ export default function Index() {
             timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
             senderId: msg.sender._id,
             senderName: msg.sender.username,
+            readBy: msg.readBy || [],
+            createdAt: msg.createdAt,
           }));
           setMessages((prev) => ({
             ...prev,
@@ -490,6 +499,7 @@ export default function Index() {
           isOnline: otherParticipants.some((p: any) => p.status === "online") || false,
           unreadCount: 0,
           isGroup: false,
+          participants: room.participants || [],
         };
         setContacts((prev) => [newRoom, ...prev]);
         }
@@ -529,6 +539,7 @@ export default function Index() {
           isOnline: true,
           unreadCount: 0,
           isGroup: true,
+          participants: data.room.participants || [],
         };
         setContacts((prev) => [newGroup, ...prev]);
         setSelectedContactId(newGroup.id);
@@ -611,6 +622,7 @@ export default function Index() {
         currentUserId="current"
 >>>>>>> 27add8127293c6a810c9371fea93e4d652c5d205
         onSendMessage={handleSendMessage}
+        socket={socket}
       />
       <NewChatModal
         isOpen={isNewChatModalOpen}

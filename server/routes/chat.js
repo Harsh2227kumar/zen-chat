@@ -150,6 +150,7 @@ router.get("/rooms/:roomId/messages", protect, async (req, res) => {
     const messages = await Message
       .find({ room: roomId })
       .populate("sender", "username avatar")
+      .populate("readBy.user", "username avatar")
       .sort("-createdAt")
       .limit(limit)
       .skip(skip);

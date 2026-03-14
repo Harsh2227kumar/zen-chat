@@ -1,6 +1,7 @@
 import { Moon, Users, MessageCirclePlus, LogOut, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface Contact {
   id: string;
@@ -19,6 +20,7 @@ interface ChatSidebarProps {
   onNewGroup: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  currentUser?: { username: string };
 }
 
 export function ChatSidebar({
@@ -29,17 +31,36 @@ export function ChatSidebar({
   onNewGroup,
   searchQuery,
   onSearchChange,
+  currentUser,
 }: ChatSidebarProps) {
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still clear local data on error
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  };
+
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="w-[25rem] flex flex-col h-full border-r border-border bg-sidebar">
+    <div className="w-[25rem] flex-shrink-0 flex flex-col h-full border-r border-border bg-sidebar">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-sidebar-foreground">RequestApp</h1>
+          <h1 className="text-3xl font-bold text-sidebar-foreground">Request App</h1>
           <div className="flex space-x-2">
             <Button variant="ghost" size="icon" className="p-2 rounded-full hover:bg-sidebar-accent">
               <Moon className="h-5 w-5 text-sidebar-foreground" />
@@ -119,14 +140,20 @@ export function ChatSidebar({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full border-2 border-primary bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">
-              JD
+              {currentUser?.username?.[0]?.toUpperCase() || "U"}
             </div>
             <div>
-              <p className="font-semibold text-sidebar-foreground">John Doe</p>
-              <p className="text-sm text-muted-foreground">My Profile</p>
+              <p className="font-semibold text-sidebar-foreground">{currentUser?.username || "User"}</p>
+              <p className="text-sm text-muted-foreground">Profile</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="p-2 rounded-full hover:bg-sidebar-accent">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="p-2 rounded-full hover:bg-sidebar-accent"
+            onClick={handleLogout}
+            title="Logout"
+          >
             <LogOut className="h-5 w-5 text-sidebar-foreground" />
           </Button>
         </div>

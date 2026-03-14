@@ -1,276 +1,217 @@
-# Real-Time Request Application
+# Zen Chat
 
-A scalable, secure real-time Request Application built with React, Node.js, Socket.io, and MongoDB.
+Modern real-time chat frontend built with React, TypeScript, Vite, Tailwind CSS, and Socket.IO.
 
-## Features
+<p align="center">
+	<img src="https://via.placeholder.com/1200x360/0f172a/ffffff?text=Zen+Chat+-+Real-time+Messaging+UI" alt="Zen Chat Banner" width="100%" />
+</p>
 
-- ✅ Real-time messaging with Socket.io
-- ✅ User authentication (JWT)
-- ✅ Private and group chats
-- ✅ Online/offline status indicators
-- ✅ Typing indicators
-- ✅ Message read receipts
-- ✅ Responsive UI with Tailwind CSS
-- ✅ Rate limiting for security
-- ✅ Input validation and sanitization
-- ✅ Optimistic UI updates
-- ✅ Automatic reconnection handling
+<p align="center">
+	<em>Replace the banner URL above with your real project cover image or screenshot collage.</em>
+</p>
 
-## Tech Stack
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-1.3.4-000000?logo=bun&logoColor=white)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?logo=socketdotio&logoColor=white)
 
-**Frontend:**
-- React 19 with TypeScript
-- Vite for fast development
-- Socket.io Client for real-time communication
-- Tailwind CSS + shadcn/ui for styling
-- React Router for navigation
+---
 
-**Backend:**
-- Node.js + Express
-- Socket.io for WebSocket connections
-- MongoDB with Mongoose ODM
-- JWT for authentication
-- bcrypt for password hashing
-- express-rate-limit for security
+## ✨ Overview
 
-## Prerequisites
+Zen Chat is a responsive messaging interface that connects to a backend API + Socket.IO server for live conversations.
 
-- Node.js 20.19+ or 22.12+ (current version 20.17.0 may cause Vite issues - upgrade recommended)
-- MongoDB (local or cloud instance)
-- npm or yarn
+It supports private chats, group chats, unread indicators, delivery/read insights, optimistic message updates, and mobile-friendly navigation.
 
-## Installation
+---
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd chat-app
-   ```
+## 🚀 Core Features
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+- 🔐 Auth-aware startup (expects existing auth token + session cookies)
+- 💬 Real-time messaging with Socket.IO events
+- 👥 Create one-to-one chats by username/email
+- 🫂 Create group chats with optional description
+- ✅ Optimistic message sending for snappy UX
+- 👁️ Message info modal (delivered/seen details)
+- 🟢 Online/offline presence indicators
+- 🔎 Sidebar search for chat rooms
+- 🔔 Unread count badges
+- 📱 Mobile layout with slide-in sidebar sheet
+- 🌙 UI primitives powered by shadcn/ui + Radix
 
-3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=3000
-   MONGODB_URI=mongodb://localhost:27017/RequestApps
-   JWT_SECRET=your_super_secret_jwt_key_change_this
-   JWT_EXPIRE=7d
-   NODE_ENV=development
-   CLIENT_URL=http://localhost:8080
-   ```
+---
 
-4. **Start MongoDB**
-   ```bash
-   # If using local MongoDB
-   mongod
-   ```
+## 🧰 Tech Stack (with icons)
 
-5. **Create a demo user (optional)**
-   ```bash
-   node server/scripts/createDemoUser.js
-   ```
+[![My Skills](https://skillicons.dev/icons?i=react,ts,vite,tailwind,bun,eslint)](https://skillicons.dev)
 
-## Development
+- **Frontend**: React 19, TypeScript
+- **Build Tool**: Vite 7
+- **Styling**: Tailwind CSS, shadcn/ui, Radix UI
+- **Real-time**: socket.io-client
+- **Routing**: react-router-dom
+- **State/Data Utilities**: @tanstack/react-query, react-hook-form, zod
 
-Run both frontend and backend concurrently:
+---
+
+## 🖼️ Screenshots
+
+<p align="center">
+	<img src="https://via.placeholder.com/1000x560/111827/ffffff?text=Chat+List+%26+Main+Conversation" alt="Chat List and Conversation" width="95%" />
+</p>
+
+<p align="center">
+	<img src="https://via.placeholder.com/1000x560/1f2937/ffffff?text=New+Chat+%26+Group+Creation+Modal" alt="New Chat and Group Modals" width="95%" />
+</p>
+
+<p align="center">
+	<img src="https://via.placeholder.com/420x860/0b1220/ffffff?text=Mobile+Sidebar+Sheet+View" alt="Mobile View" width="35%" />
+</p>
+
+> Replace these placeholder images with actual app screenshots from your local build for the best portfolio impact.
+
+---
+
+## 📁 Project Structure
+
+```text
+src/
+	components/
+		chat/
+			ChatSidebar.tsx
+			ChatArea.tsx
+			NewChatModal.tsx
+			NewGroupModal.tsx
+			MessageInfoModal.tsx
+		ui/                # shadcn/ui primitives
+	hooks/
+		use-mobile.tsx
+	lib/
+		utils.ts
+	pages/
+		Index.tsx          # main chat experience
+		NotFound.tsx
+	App.tsx
+	main.tsx
+```
+
+---
+
+## ⚙️ Prerequisites
+
+- **Bun** `>= 1.3.4` (recommended package manager/runtime)
+- A running backend server with:
+	- REST endpoints under `/api/...`
+	- Socket.IO namespace on the same base URL
+
+---
+
+## 🛠️ Getting Started
+
+### 1) Clone and install
 
 ```bash
-npm run dev
+git clone <your-repository-url>
+cd zen-chat
+bun install
 ```
 
-Or run them separately:
+### 2) Configure environment
+
+Create a `.env` file in the project root:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+> If `VITE_API_BASE_URL` is not set, the app falls back to `http://localhost:3000`.
+
+### 3) Run development server
 
 ```bash
-# Terminal 1 - Backend
-npm run dev:backend
-
-# Terminal 2 - Frontend
-npm run dev:frontend
+bun run dev
 ```
 
-- Frontend: http://localhost:8080
-- Backend API: http://localhost:3000
+Open the URL shown by Vite (typically `http://localhost:5173`).
 
-## Production Build
+---
 
-1. **Build the frontend**
-   ```bash
-   npm run build:frontend
-   ```
+## 📜 Available Scripts
 
-2. **Start the server**
-   ```bash
-   npm start
-   ```
+- `bun run dev` — start dev server
+- `bun run build` — production build
+- `bun run build:dev` — development-mode build
+- `bun run preview` — preview production build
+- `bun run lint` — run ESLint
 
-The server will serve the built frontend from the `dist` folder.
+---
 
-## Project Structure
+## 🔌 Backend Contract (Expected)
 
-```
-chat-app/
-├── server/                 # Backend code
-│   ├── middleware/        # Authentication, rate limiting
-│   ├── models/           # Mongoose models
-│   ├── routes/           # API routes
-│   ├── utils/            # Socket handler, helpers
-│   ├── scripts/          # Utility scripts
-│   └── server.js         # Express server setup
-├── src/                   # Frontend code
-│   ├── components/       # React components
-│   ├── pages/           # Page components
-│   ├── hooks/           # Custom hooks
-│   ├── lib/             # Utilities
-│   └── App.tsx          # Main app component
-├── public/              # Static assets
-└── dist/               # Production build (generated)
-```
+This frontend expects authentication and chat APIs from a backend service.
 
-## API Endpoints
+### REST endpoints used
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-- `GET /api/auth/me` - Get current user
-- `GET /api/auth/users` - Get all users (except current)
+- `GET /api/auth/me`
+- `POST /api/auth/logout`
+- `GET /api/chat/rooms`
+- `GET /api/chat/rooms/:roomId/messages`
+- `POST /api/chat/rooms/private-by-username`
+- `POST /api/chat/rooms`
 
-### Chat
-- `POST /api/chat/rooms` - Create a new room
-- `GET /api/chat/rooms` - Get all user's rooms
-- `GET /api/chat/rooms/:roomId/messages` - Get room messages
-- `POST /api/chat/rooms/private` - Create/get private chat
-- `POST /api/chat/rooms/private-by-username` - Create/get private chat by username
+### Socket events used
 
-## Socket Events
+- `connect`, `connect_error`, `disconnect`
+- `room:join`, `room:created`
+- `message:send`, `message:new`, `message:error`
+- `user:status`
 
-### Client → Server
-- `room:join` - Join a specific room
-- `message:send` - Send a message
-- `typing:start` - Start typing indicator
-- `typing:stop` - Stop typing indicator
-- `message:read` - Mark message as read
+### Auth expectations
 
-### Server → Client
-- `message:new` - New message received
-- `user:status` - User online/offline status
-- `typing:start` - User started typing
-- `typing:stop` - User stopped typing
-- `message:read` - Message read confirmation
-- `message:error` - Message error
+- Token is read from `localStorage.getItem("token")`
+- Requests use `credentials: "include"` for cookie/session support
 
-## Security Features
+---
 
-1. **Rate Limiting**
-   - API: 100 requests per 15 minutes
-   - Auth: 5 failed attempts per 15 minutes
-   - Messages: 30 per minute
+## 🧠 How the App Works
 
-2. **Authentication**
-   - JWT tokens with 7-day expiration
-   - HttpOnly cookies
-   - Password hashing with bcrypt (12 rounds)
+1. On load, app checks for auth token and opens a Socket.IO connection.
+2. It fetches current user + room list and joins room channels.
+3. Selecting a room fetches its message history (lazy per room).
+4. Sending a message updates UI optimistically, then syncs with server events.
+5. Incoming events update messages, last message preview, and presence state.
 
-3. **Input Validation**
-   - All user inputs sanitized
-   - Length limits enforced
-   - Type validation
+---
 
-4. **CORS**
-   - Configured for specific origins
-   - Credentials support enabled
+## 📱 Responsive Behavior
 
-## Scalability Considerations
+- **Desktop/Tablet**: sidebar + chat area side-by-side
+- **Mobile**: sidebar displayed in a left sheet drawer, chat area stays primary
 
-1. **Database Indexing**
-   - Indexed fields: email, username, room participants, messages
-   - Compound indexes for common queries
+---
 
-2. **Socket.io**
-   - Room-based broadcasting to reduce overhead
-   - Reconnection handling with automatic room rejoin
+## 🧪 Quality & Tooling
 
-3. **State Management**
-   - Optimistic updates for better UX
-   - Efficient re-rendering with proper React patterns
+- ESLint 9 configuration included
+- TypeScript strict project setup
+- Vite + SWC for fast builds and HMR
 
-4. **API Design**
-   - Pagination support (max 100 messages per request)
-   - Lazy loading of messages
+---
 
-## Environment Variables
+## 🚢 Deployment
 
-**Backend (.env)**
-```env
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/RequestApps
-JWT_SECRET=your_jwt_secret_here
-JWT_EXPIRE=7d
-NODE_ENV=production
-CLIENT_URL=https://yourdomain.com
+Build and deploy static assets from `dist/`:
+
+```bash
+bun run build
 ```
 
-**Frontend (.env.production)**
-```env
-VITE_API_BASE_URL=https://api.yourdomain.com
-```
+Then host `dist` on any static hosting provider (Netlify, Vercel, GitHub Pages, Nginx, etc.), ensuring it can reach your API/Socket backend.
 
-## Deployment
+---
 
-### Backend (Node.js)
+## 🙌 Credits
 
-1. Set NODE_ENV=production
-2. Ensure MongoDB is accessible
-3. Set strong JWT_SECRET
-4. Configure CLIENT_URL to frontend domain
-5. Enable HTTPS in production
-
-### Frontend (React)
-
-1. Build: `npm run build:frontend`
-2. Serve `dist` folder via backend or CDN
-3. Set VITE_API_BASE_URL in .env.production
-
-### Recommended Platforms
-
-- **Backend**: Heroku, Railway, DigitalOcean, AWS EC2
-- **Database**: MongoDB Atlas (cloud)
-- **Frontend**: Netlify, Vercel, or served by backend
-
-## Demo Credentials
-
-If you ran the createDemoUser script:
-- Email: alice@example.com
-- Password: password123
-
-## Troubleshooting
-
-**Socket connection fails:**
-- Check if backend is running on correct port
-- Verify CORS settings
-- Ensure token is stored in localStorage
-
-**Vite build fails:**
-- Upgrade Node.js to 20.19+ or 22.12+
-- Clear node_modules and reinstall
-
-**MongoDB connection error:**
-- Verify MongoDB is running
-- Check MONGODB_URI in .env
-
-## License
-
-MIT
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+Built with the React + Vite + shadcn/ui ecosystem.
